@@ -1,0 +1,25 @@
+
+// ステータス比較用スクリプト
+let actor_index = $gameVariables.value(6);
+let actor = $gameParty.members()[actor_index];
+const slots = [0, 1, 2, 3, 4]; // 装備スロットを表すインデックス
+const switchIds = [9, 10, 11, 12, 13]; // 対応するゲームスイッチID
+const variableIds = [57, 58, 59, 60, 61]; // 対応するゲーム変数ID
+const params = [0, 1, 2, 3, 4, 5, 6, 7];
+const yPos = [90, 120, 150, 180, 210, 240, 270, 300];
+
+slots.forEach((slotIndex, i) => {
+  let currentEquip = actor.equips()[slotIndex];
+  let newEquip = $gameVariables.value(variableIds[i]);
+  if ($gameSwitches.value(switchIds[i])) {
+    params.forEach((paramId, index) => {
+      let currentParam = actor.param(paramId);
+      let currentEquipParam = currentEquip ? currentEquip.params[paramId] : 0;
+      let newEquipParam = newEquip ? newEquip.params[paramId] : 0;
+      let newParam = currentParam - currentEquipParam + newEquipParam;
+      let colorId = newParam > currentParam ? 29 : (newParam < currentParam ? 10 : 0);
+      this.changeTextColor(ColorManager.textColor(colorId));
+      this.drawText(`→${newParam}`, r.x + 200, r.y + yPos[index], 400, 'left');
+    });
+  }
+});
