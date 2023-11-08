@@ -1,0 +1,55 @@
+// シーンカスタムメニュー
+// ショップ項目描画用
+
+// 購入用
+let shop_index = $gameVariables.value(4);
+let shop_list = $gameVariables.value(34);
+let purchaseCount = $gameVariables.value(35);
+let currentIncrement = $gameVariables.value(45);
+let subTotal = item.price * purchaseCount[index];
+let totalAmount = $gameVariables.value(37);
+const last_index = shop_list.length - 1;
+
+if(index !== last_index){
+    this.drawItemName(item, r.x, r.y, r.width);
+    this.drawText(`購入数×${purchaseCount[index]}`, r.x+250, r.y, r.width, 'left');
+    this.drawText(`倍率×${currentIncrement}`, r.x+400, r.y, r.width, 'left');
+    if(purchaseCount[index] === 0){
+        this.drawText(`${item.price}`, r.x, r.y, r.width, 'right');
+    }else if(purchaseCount[index] > 0){
+        this.drawText(`${subTotal}`, r.x, r.y, r.width, 'right');
+    }
+}else if(index === last_index){
+    this.drawText(`合計金額`, r.x, r.y, r.width, 'left');
+    this.drawText(`${totalAmount}`, r.x, r.y, r.width, 'right');
+}
+
+
+
+
+
+
+// 売却用
+let shop_index = $gameVariables.value(4);
+let shop_list = $gameVariables.value(40);
+let purchaseCount = $gameVariables.value(46);
+let currentIncrement = $gameVariables.value(45);
+let sellPrice = item.price / 2;
+let subTotal = sellPrice * purchaseCount[index];
+let totalAmount = $gameVariables.value(47);
+const last_index = shop_list.length - 1;
+
+if(index !== last_index){
+    this.drawItemName(item, r.x, r.y, r.width);
+    this.drawText(`売却数×${purchaseCount[index]}`, r.x+250, r.y, r.width, 'left');
+    this.drawText(`倍率×${currentIncrement}`, r.x+400, r.y, r.width, 'left');
+    if(purchaseCount[index] === 0){
+        this.drawText(`${sellPrice}`, r.x, r.y, r.width, 'right');
+    }else if(purchaseCount[index] > 0){
+        this.drawText(`${subTotal}`, r.x, r.y, r.width, 'right');
+    }
+}else if(index === last_index){
+    this.drawText(`合計金額`, r.x, r.y, r.width, 'left');
+    this.drawText(`${totalAmount}`, r.x, r.y, r.width, 'right');
+}
+
