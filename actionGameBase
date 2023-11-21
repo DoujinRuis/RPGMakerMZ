@@ -1,0 +1,61 @@
+// アクションゲーム基礎
+
+// アクター用 ///////////////////////////////////////////////////////////////////////////////
+let eventId = this._eventId; // このイベントのID
+let event = $gameMap.event(eventId); // このイベントのオブジェクトを取得
+let eventX = event.x; // このイベントのマップX座標
+let eventY = event.y; // このイベントのマップY座標
+// ゲーム変数に座標を代入
+$gameVariables.setValue(1, eventX); // ゲーム変数1にX座標を代入
+$gameVariables.setValue(2, eventY); // ゲーム変数2にY座標を代入
+$gameVariables.setValue(3, event);
+
+// イベント検索 //////////////////////////////////////////////////////////////////////////////
+let this_eveX = $gameVariables.value(1);
+let this_eveY = $gameVariables.value(2);
+let event = $gameVariables.value(3);
+
+// イベント2が特定の方向を向いている場合の隣接座標を計算
+let targetX = this_eveX;
+let targetY = this_eveY;
+
+switch (event.direction()) {
+    case 2: // 下を向いている
+        targetY += 1;
+        break;
+    case 4: // 左を向いている
+        targetX -= 1;
+        break;
+    case 6: // 右を向いている
+        targetX += 1;
+        break;
+    case 8: // 上を向いている
+        targetY -= 1;
+        break;
+    default:
+        // その他の方向（通常はあり得ないが、念のため）
+        break;
+}
+
+// 隣接座標にイベント3が存在するか確認
+let adjacentEvents = $gameMap.eventsXy(targetX, targetY);
+let event3Exists = adjacentEvents.some(e => e.event().note.includes("Aグループ"));
+
+// イベント3が存在する場合、コモンイベント2を呼び出す
+if (event3Exists) {
+    $gameTemp.reserveCommonEvent(2);
+}
+
+// イベント取得 /////////////////////////////////////////////////////////////////////////////////
+let this_eveX = $gameVariables.value(1);
+let this_eveY = $gameVariables.value(2);
+
+let targetEvents = $gameMap.eventsXy(this_eveX, this_eveY);
+
+targetEvents.forEach(event => {
+    let note = event.event().note;
+    if (note.includes("Aグループ")) {
+        // イベントをすり抜け可能に設定
+        event.setThrough(true);
+    }
+});
