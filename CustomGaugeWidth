@@ -1,0 +1,23 @@
+
+/*:
+ * @plugindesc ゲージの幅を調整するプラグイン
+ * @author DoujinRuis
+ *
+ * @param gaugeWidth
+ * @text ゲージの幅
+ * @type number
+ * @default 128
+ *
+ * @help
+ * このプラグインは、ゲージの幅をカスタマイズします。
+ * プラグインパラメータで幅を設定できます。
+ */
+
+(function() {
+    let parameters = PluginManager.parameters('CustomGaugeWidth');
+    let gaugeWidth = Number(parameters['gaugeWidth'] || 128);
+
+    Sprite_Gauge.prototype.bitmapWidth = function() {
+        return gaugeWidth;
+    };
+})();
