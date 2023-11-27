@@ -1,0 +1,15 @@
+
+並列処理
+// イベント2の座標を取得
+let event2 = $gameMap.event(2);
+let event2X = event2.x;
+let event2Y = event2.y;
+
+// 目標のマップ座標
+let targetX = 28;
+let targetY = 7;
+
+// イベント2が目標の座標に来たかどうかを確認
+if (event2X === targetX && event2Y === targetY) {
+    $gameSwitches.setValue(3, true);
+}
