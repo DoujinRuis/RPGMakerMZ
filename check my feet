@@ -28,19 +28,10 @@ switch ($gamePlayer.direction()) {
 let events = $gameMap.eventsXy(targetX, targetY);
 
 if (events.length > 0) {
-    // 対象のタイルにイベントがある場合
-    let foundVillager = false;
     for (let i = 0; i < events.length; i++) {
         if (events[i].event().note.includes("村人")) {
-            // イベントのメモに"村人"が含まれている場合
-　　　　　　$gameMap.event(events[i].eventId()).start();
-            foundVillager = true;
+            $gameMap.event(events[i].eventId()).start();
             break;
         }
     }
-    if ( !foundVillager ) {
-        $gameSwitches.setValue(6, true);
-    }
-} else {
-    $gameSwitches.setValue(6, true);
 }
