@@ -1,6 +1,7 @@
 
 
 // 足元を調べたい
+
 let player_x = $gamePlayer.x;
 let player_y = $gamePlayer.y;
 
@@ -28,10 +29,21 @@ switch ($gamePlayer.direction()) {
 let events = $gameMap.eventsXy(targetX, targetY);
 
 if (events.length > 0) {
+    let foundVillager = false;
     for (let i = 0; i < events.length; i++) {
         if (events[i].event().note.includes("村人")) {
             $gameMap.event(events[i].eventId()).start();
+            foundVillager = true;
             break;
         }
     }
+    if (!foundVillager) {
+        // 対象のタイルに"村人"イベントがない場合、足元のイベントを起動
+        let regionId = $gameMap.regionId(player_x, player_y);
+        $gameVariables.setValue(6, regionId);
+    }
+} else{
+    // ターゲットのタイルにイベントがない場合、足元のイベントを起動
+    let regionId = $gameMap.regionId(player_x, player_y);
+    $gameVariables.setValue(6, regionId);
 }
