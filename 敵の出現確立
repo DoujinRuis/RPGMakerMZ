@@ -1,0 +1,39 @@
+// 敵の出現確率
+$gameVariables.setValue(13, Math.floor(Math.random() * 10) + 1);
+let enemy_num = $gameVariables.value(13);
+
+if (enemy_num >= 8) { // 出現複数
+    // 敵の出現数
+    $gameVariables.setValue(15, Math.floor(Math.random() * 2) + 1);
+    let enemy_multi = $gameVariables.value(15);
+
+    if (enemy_multi === 1) {
+        // 2体の敵が出現
+        let firstEnemy = Math.floor(Math.random() * 3) + 1; // 1から3の乱数
+        let secondEnemy;
+        do {
+            secondEnemy = Math.floor(Math.random() * 3) + 1; // 重複しない2番目の敵
+        } while (secondEnemy === firstEnemy);
+
+        $gameSwitches.setValue(firstEnemy + 2, true); // 最初の敵のスイッチをON
+        $gameSwitches.setValue(secondEnemy + 2, true); // 2番目の敵のスイッチをON
+    } else {
+        // 3体全ての敵が出現
+        $gameSwitches.setValue(3, true); // スイッチ3をON
+        $gameSwitches.setValue(4, true); // スイッチ4をON
+        $gameSwitches.setValue(5, true); // スイッチ5をON
+    }
+
+}else { // 出現1体
+    // 敵の出現No
+    $gameVariables.setValue(14, Math.floor(Math.random() * 3) + 1);
+    let enemy_No = $gameVariables.value(14);
+
+    if (enemy_No === 1) {
+        $gameSwitches.setValue(3, true); // スイッチ3をON
+    } else if (enemy_No === 2) {
+        $gameSwitches.setValue(4, true); // スイッチ4をON
+    } else if (enemy_No === 3) {
+        $gameSwitches.setValue(5, true); // スイッチ5をON
+    }
+}
