@@ -1,0 +1,67 @@
+
+// パララックスマップ用
+// プレイヤー歩行用スクリプト
+let player_wx = $gameVariables.value(1);
+let player_wy = $gameVariables.value(2);
+let pictureId = 2; // ピクチャIDは2で統一
+let origin = 0;
+let scaleX = 100;
+let scaleY = 100;
+let opacity = 255;
+let blendMode = 0;
+let scaleMax = 100; // スケールの最大値
+let scaleMin = 20; // スケールの最小値
+let walkingSpeed = 15; // 歩行アニメーションの速度（フレーム数）
+let lastDirection = ''; // 最後に押された方向キーを記録する変数
+let isAnyKeyPressed = false; // 何かのキーが押されているか
+
+function showWalkingPicture(direction) {
+    let frameCount = Graphics.frameCount % (walkingSpeed * 4); // 4つの画像パターン
+    let pictureNames = ["a", "b", "c", "b"];
+    let pictureIndex = Math.floor(frameCount / walkingSpeed);
+    let pictureSuffix = pictureNames[pictureIndex];
+    let pictureName = `Monster＿mv0${direction}_${pictureSuffix}`;
+
+    // ピクチャを表示
+    $gameScreen.showPicture(pictureId, pictureName, origin, player_wx, player_wy, scaleX, scaleY, opacity, blendMode);
+    lastDirection = direction; // 最後に押された方向を記録
+    isAnyKeyPressed = true; // キーが押されている状態を記録
+}
+
+// プレイヤーのY座標に基づいてスケールを調整
+function adjustScaleByPlayerY() {
+    // プレイヤーのY座標を取得
+    let player_wy = $gameVariables.value(2);
+
+    // Y座標に基づいてスケールを計算（例として、画面の高さを基準にします）
+    let screenHeight = 720; // RPGツクールMZの標準の画面の高さ
+    let scaleRange = scaleMax - scaleMin;
+    let playerPositionRatio = player_wy / screenHeight;
+
+    // スケールを計算（最小値からのオフセットを加算）
+    scaleX = scaleMin + scaleRange * playerPositionRatio;
+    scaleY = scaleMin + scaleRange * playerPositionRatio;
+
+    // スケールの値を制限（念のため）
+    scaleX = Math.max(Math.min(scaleX, scaleMax), scaleMin);
+    scaleY = Math.max(Math.min(scaleY, scaleMax), scaleMin);
+}
+
+// ゲームループや適切な更新処理内でスケール調整関数を呼び出す
+adjustScaleByPlayerY();
+
+// 各方向のキー入力に応じてピクチャ表示関数を呼び出す
+if (Input.isPressed('down')) showWalkingPicture('1');
+if (Input.isPressed('left')) showWalkingPicture('2');
+if (Input.isPressed('right')) showWalkingPicture('3');
+if (Input.isPressed('up')) showWalkingPicture('4');
+
+// キーが離されたときの処理
+if (!isAnyKeyPressed) {
+    let pictureName = `Monster＿mv0${lastDirection}_a`; // 最後に表示された方向の最初の画像
+    // ピクチャを表示
+    let player_wx = $gameVariables.value(1);
+    let player_wy = $gameVariables.value(2);
+    $gameScreen.showPicture(pictureId, pictureName, origin, player_wx, player_wy, scaleX, scaleY, opacity, blendMode);
+    lastDirection = ''; // 方向をリセット
+}
