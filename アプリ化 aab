@@ -1,0 +1,24 @@
+
+// aabアプリ化
+cordova create hello com.example.hello HelloWorld
+cordova platform add android
+<preference name="android-packageType" value="bundle" />
+cordova build android -- --packageType=bundle
+
+
+keytool -genkey -v -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 36500
+
+{
+  "android": {
+    "release": {
+      "keystore": "path/to/my-release-key.keystore",
+      "storePassword": "keystore-password",
+      "alias": "my-key-alias",
+      "password" : "key-password",
+      "keystoreType": ""
+    }
+  }
+}
+
+
+cordova build android --release --buildConfig=build.json
