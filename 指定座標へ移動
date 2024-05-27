@@ -1,0 +1,43 @@
+var eventId = this.eventId(); // 現在のイベントのIDを取得
+var targetX = 13;
+var targetY = 1;
+
+// 現在位置を取得
+var currentX = $gameMap.event(eventId).x;
+var currentY = $gameMap.event(eventId).y;
+
+// 移動ルートを設定する配列
+var route = [];
+
+// 移動スピードを上げる (例: 5に設定)
+route.push({ code: Game_Character.ROUTE_CHANGE_SPEED, parameters: [3] });
+
+// X軸の移動
+if (currentX < targetX) {
+  for (var i = currentX; i < targetX; i++) {
+    route.push({ code: Game_Character.ROUTE_MOVE_RIGHT });
+  }
+} else {
+  for (var i = currentX; i > targetX; i--) {
+    route.push({ code: Game_Character.ROUTE_MOVE_LEFT });
+  }
+}
+
+// Y軸の移動
+if (currentY < targetY) {
+  for (var j = currentY; j < targetY; j++) {
+    route.push({ code: Game_Character.ROUTE_MOVE_DOWN });
+  }
+} else {
+  for (var j = currentY; j > targetY; j--) {
+    route.push({ code: Game_Character.ROUTE_MOVE_UP });
+  }
+}
+
+// 移動ルートの終了コードを追加
+route.push({ code: Game_Character.ROUTE_END });
+
+// 移動ルートを設定
+var moveRoute = { list: route, repeat: false, skippable: true };
+$gameMap.event(eventId).setMoveRoute(moveRoute);
+$gameMap.event(eventId).forceMoveRoute(moveRoute);
