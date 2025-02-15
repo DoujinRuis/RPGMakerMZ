@@ -1,7 +1,7 @@
 /*:
  * @target MZ
  * @plugindesc バトル中のセリフをログに記録し、キーボードで呼び出せるようにするプラグイン✨
- * @author サラ
+ * @author DoujinRuis
  * 
  * @help
  * 【修正点】
