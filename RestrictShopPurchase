@@ -1,0 +1,66 @@
+/*:
+ * @target MZ
+ * @plugindesc 購入制限アイテムグループのうち1つだけ購入可能にするプラグイン
+ * @author サラ
+ * 
+ * @help RestrictShopPurchase.js
+ * 
+ * 【機能】
+ * - アイテムのメモ欄に <購入制限:A> のように記載すると、
+ *   同じタグを持つアイテム群の中で1つしか購入できなくなる
+ * - 次回ショップ訪問時に購入制限がリセットされる
+ * 
+ * 【使い方】
+ * 1. アイテム・武器・防具のメモ欄に <購入制限:グループ名> を記述
+ * 2. 例: アイテムA, B, Cのどれか1つだけを購入可能にする
+ *    - アイテムAのメモ欄: <購入制限:限定グループ>
+ *    - アイテムBのメモ欄: <購入制限:限定グループ>
+ *    - アイテムCのメモ欄: <購入制限:限定グループ>
+ * 
+ * 【リセット】
+ * - プレイヤーがショップを開くたびに購入履歴はリセットされる
+ */
+
+(() => {
+    const _Scene_Shop_create = Scene_Shop.prototype.create;
+    Scene_Shop.prototype.create = function() {
+        _Scene_Shop_create.call(this);
+        this._purchasedGroups = {}; // 購入履歴をリセット
+    };
+
+    const _Scene_Shop_doBuy = Scene_Shop.prototype.doBuy;
+    Scene_Shop.prototype.doBuy = function(number) {
+        const item = this._item;
+        const restrictionTag = getRestrictionTag(item);
+
+        if (restrictionTag) {
+            if (!this._purchasedGroups) this._purchasedGroups = {}; // 念のため初期化
+            this._purchasedGroups[restrictionTag] = true; // 購入記録
+        }
+
+        _Scene_Shop_doBuy.call(this, number);
+    };
+
+    const _Window_ShopBuy_isEnabled = Window_ShopBuy.prototype.isEnabled;
+    Window_ShopBuy.prototype.isEnabled = function(item) {
+        const restrictionTag = getRestrictionTag(item);
+
+        // シーンが存在し、_purchasedGroupsが未定義の場合は初期化
+        if (SceneManager._scene && !SceneManager._scene._purchasedGroups) {
+            SceneManager._scene._purchasedGroups = {};
+        }
+
+        if (restrictionTag && SceneManager._scene._purchasedGroups[restrictionTag]) {
+            return false; // 同じグループ内で既に購入済みなら不可
+        }
+
+        return _Window_ShopBuy_isEnabled.call(this, item);
+    };
+
+    function getRestrictionTag(item) {
+        if (item && item.meta && item.meta["購入制限"]) {
+            return item.meta["購入制限"];
+        }
+        return null;
+    }
+})();
