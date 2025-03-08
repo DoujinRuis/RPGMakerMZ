@@ -1,0 +1,57 @@
+/*:
+ * @target MZ
+ * @plugindesc アイテム購入制限を設定し、売り切れ時に「SoldOut」を表示するプラグイン
+ * @author DoujinRuis
+ * 
+ * @help
+ * アイテムのメモ欄に以下のように記載すると、購入制限を設定できます：
+ * <購入制限:3>  →  3個まで購入可能
+ * <購入制限:1>  →  1個だけ購入可能
+ *
+ * 売り切れの場合、ショップで「SoldOut」と表示され購入不可になります。
+ * 
+ * 【使用方法】
+ * - プラグインをONにするだけで機能します。
+ */
+
+(() => {
+    const _Window_ShopBuy_drawItem = Window_ShopBuy.prototype.drawItem;
+
+    Window_ShopBuy.prototype.drawItem = function(index) {
+        const item = this.itemAt(index);
+        if (!item) return;
+        
+        const rect = this.itemLineRect(index);
+        this.changePaintOpacity(this.isEnabled(item));
+        
+        // 購入制限のチェック
+        const limitMatch = item.meta["購入制限"] ? item.meta["購入制限"].match(/\d+/) : null;
+        const limit = limitMatch ? parseInt(limitMatch[0]) : null;
+        const owned = $gameParty.numItems(item);
+        
+        if (limit !== null && owned >= limit) {
+            this.changePaintOpacity(false);
+            this.drawText("SoldOut", rect.x, rect.y, rect.width, "center");
+        } else {
+            this.drawItemName(item, rect.x, rect.y, rect.width);
+            this.drawText(this.price(item), rect.x, rect.y, rect.width, "right");
+        }
+        
+        this.changePaintOpacity(true);
+    };
+
+    const _Window_ShopBuy_isEnabled = Window_ShopBuy.prototype.isEnabled;
+    Window_ShopBuy.prototype.isEnabled = function(item) {
+        const baseEnabled = _Window_ShopBuy_isEnabled.call(this, item);
+        
+        // 購入制限チェック
+        const limitMatch = item.meta["購入制限"] ? item.meta["購入制限"].match(/\d+/) : null;
+        const limit = limitMatch ? parseInt(limitMatch[0]) : null;
+        const owned = $gameParty.numItems(item);
+        
+        if (limit !== null && owned >= limit) {
+            return false;
+        }
+        return baseEnabled;
+    };
+})();
