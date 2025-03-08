@@ -1,0 +1,75 @@
+
+/*:
+ * @plugindesc アイテム・武器・防具をセットで購入できるプラグイン
+ * @author サラ
+ * 
+ * @help
+ * アイテム、武器、防具のメモ欄に以下のように記述してください：
+ * 
+ * <アイテムセット:7,8,9>   ← アイテムのセット
+ * <武器セット:10,11>       ← 武器のセット
+ * <防具セット:12,13,14>    ← 防具のセット
+ * 
+ * ショップでセットのいずれかが並んでいると、セット価格で購入可能になります。
+ */
+
+(() => {
+    const _Window_ShopBuy_price = Window_ShopBuy.prototype.price;
+    
+    Window_ShopBuy.prototype.price = function(item) {
+        const setInfo = getSetInfo(item);
+        if (setInfo.set.length > 1) {
+            return getSetPrice(setInfo.set, setInfo.type);
+        }
+        return _Window_ShopBuy_price.call(this, item);
+    };
+
+    function getSetInfo(item) {
+        if (!item) return { type: "", set: [] };
+
+        if (item.meta["アイテムセット"]) {
+            return { type: "item", set: item.meta["アイテムセット"].split(",").map(Number) };
+        }
+        if (item.meta["武器セット"]) {
+            return { type: "weapon", set: item.meta["武器セット"].split(",").map(Number) };
+        }
+        if (item.meta["防具セット"]) {
+            return { type: "armor", set: item.meta["防具セット"].split(",").map(Number) };
+        }
+        return { type: "", set: [] };
+    }
+
+    function getSetPrice(set, type) {
+        return set.reduce((sum, id) => {
+            let item;
+            if (type === "item") item = $dataItems[id];
+            else if (type === "weapon") item = $dataWeapons[id];
+            else if (type === "armor") item = $dataArmors[id];
+
+            return item ? sum + item.price : sum;
+        }, 0);
+    }
+
+    const _Scene_Shop_doBuy = Scene_Shop.prototype.doBuy;
+    
+    Scene_Shop.prototype.doBuy = function(number) {
+        const setInfo = getSetInfo(this._item);
+        if (setInfo.set.length > 1) {
+            const totalPrice = getSetPrice(setInfo.set, setInfo.type) * number;
+            if ($gameParty.gold() >= totalPrice) {
+                setInfo.set.forEach(id => {
+                    if (setInfo.type === "item") $gameParty.gainItem($dataItems[id], number);
+                    else if (setInfo.type === "weapon") $gameParty.gainItem($dataWeapons[id], number);
+                    else if (setInfo.type === "armor") $gameParty.gainItem($dataArmors[id], number);
+                });
+                $gameParty.loseGold(totalPrice);
+                this._goldWindow.refresh();
+                this._statusWindow.refresh();
+            } else {
+                SoundManager.playBuzzer();
+            }
+        } else {
+            _Scene_Shop_doBuy.call(this, number);
+        }
+    };
+})();
