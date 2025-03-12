@@ -1,0 +1,71 @@
+// レンタルサーバーReplit
+
+(() => {
+
+    // Replitのアドレス
+    const socket = io('https://5946fd95-5069-4057-9244-ccdcff29f719-00-w7g0f0uo4tw7.sisko.replit.dev'); // ReplitのDev URLを指定
+
+
+    const players = {}; // プレイヤーデータを格納するオブジェクト
+
+    // ホストの判定とプレイヤーIDの設定
+    let playerId;
+
+    socket.emit('requestPlayerId'); // サーバーにID割り当てを要求
+
+    // サーバーからプレイヤーIDを受け取る
+    socket.on('assignPlayerId', (assignedId) => {
+        playerId = assignedId; // IDをセット
+        console.log(`プレイヤーIDが割り当てられました: ${playerId}`);
+
+    });
+
+    // プレイヤーが移動したらデータを送信
+    const _Game_Player_update = Game_Player.prototype.update;
+    Game_Player.prototype.update = function(sceneActive) {
+        _Game_Player_update.call(this, sceneActive);
+        if (this.isMoving()) {
+            sendPlayerAction('move');
+        }
+    };
+
+    // プレイヤーの行動を送信
+    function sendPlayerAction(action) {
+        const data = {
+            player: playerId,
+            x: $gamePlayer.x,
+            y: $gamePlayer.y,
+            direction: $gamePlayer.direction(),
+        };
+
+        socket.emit('gameData', data);
+    }
+
+    // 他のプレイヤーの行動を受信
+    socket.on('gameData', (data) => {
+        if (data.player !== playerId) {
+            players[data.player] = {
+                x: data.x,
+                y: data.y,
+                direction: data.direction || 2,
+                speed: data.speed || 4, // デフォルト速度4
+            };
+    
+            // プレイヤーごとに対応するゲーム変数へ座標を代入
+            if (data.player === 1) {
+                $gameSwitches.setValue(1, true);
+                $gameVariables.setValue(1, data.x); // プレイヤー1のX座標
+                $gameVariables.setValue(2, data.y); // プレイヤー1のY座標
+                $gameVariables.setValue(5, data.speed); // プレイヤー1の移動速度
+            } else if (data.player === 2) {
+                $gameSwitches.setValue(data.player, true);
+                $gameVariables.setValue(3, data.x); // プレイヤー2のX座標
+                $gameVariables.setValue(4, data.y); // プレイヤー2のY座標
+                $gameVariables.setValue(6, data.speed); // プレイヤー2の移動速度
+            }
+        }
+    });
+
+
+
+})();
