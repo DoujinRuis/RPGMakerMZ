@@ -1,0 +1,84 @@
+// レンタルサーバーReplitで実行
+
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+const availableIds = [2, 3, 4]; // クライアント用の固定IDリスト
+const players = {}; // プレイヤーデータを管理するオブジェクト
+let hostAssigned = false; // ホストが割り当てられたかのフラグ
+
+io.on('connection', (socket) => {
+    let clientAddress = socket.handshake.address;
+
+    // IPv6 の "::1" を "127.0.0.1" に変換
+    if (clientAddress === "::1") {
+        clientAddress = "127.0.0.1";
+    }
+
+    console.log(`新しいプレイヤーが接続しました！ IP: ${clientAddress}, ID: ${socket.id}`);
+
+    let assignedId;
+
+    // ホストの割り当て
+    if (!hostAssigned) {
+        assignedId = 1;
+        hostAssigned = true;
+        console.log("ホストが接続しました（ID=1）");
+    } else {
+        if (availableIds.length > 0) {
+            assignedId = availableIds.shift(); // 使用可能なIDを取得
+        } else {
+            console.log("最大プレイヤー数に達しました");
+            socket.disconnect(); // 上限超えたら切断
+            return;
+        }
+    }
+
+    // クライアントへIDを送信
+    socket.emit('assignPlayerId', assignedId);
+    players[socket.id] = { id: assignedId, x: 0, y: 0 };
+
+    // // ゲームデータの受信
+    // socket.on('gameData', (data) => {
+    //     players[socket.id] = { id: assignedId, x: data.x, y: data.y };
+    //     io.emit('gameData', { player: assignedId, x: data.x, y: data.y });
+    // });
+
+    // ゲームデータの受信
+    socket.on('gameData', (data) => {
+        players[socket.id] = { id: assignedId, x: data.x, y: data.y };
+
+        // **プレイヤーの座標をログに表示**
+        console.log(`📍 プレイヤー ${assignedId} の位置: X=${data.x}, Y=${data.y}`);
+
+        io.emit('gameData', { player: assignedId, x: data.x, y: data.y });
+    });
+
+
+    // 切断処理
+    socket.on('disconnect', () => {
+        console.log(`プレイヤーが切断しました: ${socket.id}`);
+        delete players[socket.id];
+
+        // IDを解放
+        if (assignedId !== 1 && !availableIds.includes(assignedId)) {
+            availableIds.push(assignedId);
+            availableIds.sort();
+        }
+
+        if (assignedId === 1) {
+            hostAssigned = false; // ホストが切断されたらリセット
+        }
+    });
+});
+
+// **Replit では process.env.PORT を使う**
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`🎮 サーバーがポート ${PORT} で起動しました！`);
+});
