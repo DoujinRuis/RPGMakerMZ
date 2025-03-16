@@ -1,0 +1,106 @@
+/*:
+ * @target MZ
+ * @plugindesc メニュー画面の大項目（アイテム、スキルなど）にアイコンを表示するプラグイン 💖
+ * @author サラ
+ * 
+ * @param itemIcon
+ * @text アイテムアイコン
+ * @desc アイテムメニューのアイコンID
+ * @type number
+ * @default 176
+ * 
+ * @param skillIcon
+ * @text スキルアイコン
+ * @desc スキルメニューのアイコンID
+ * @type number
+ * @default 64
+ * 
+ * @param equipIcon
+ * @text 装備アイコン
+ * @desc 装備メニューのアイコンID
+ * @type number
+ * @default 96
+ * 
+ * @param statusIcon
+ * @text ステータスアイコン
+ * @desc ステータスメニューのアイコンID
+ * @type number
+ * @default 120
+ * 
+ * @param sortIcon
+ * @text 並び替えアイコン
+ * @desc 並び替えメニューのアイコンID
+ * @type number
+ * @default 160
+ * 
+ * @param optionsIcon
+ * @text オプションアイコン
+ * @desc オプションメニューのアイコンID
+ * @type number
+ * @default 144
+ * 
+ * @param saveIcon
+ * @text セーブアイコン
+ * @desc セーブメニューのアイコンID
+ * @type number
+ * @default 224
+ * 
+ * @param gameEndIcon
+ * @text ゲーム終了アイコン
+ * @desc ゲーム終了メニューのアイコンID
+ * @type number
+ * @default 128
+ * 
+ * @param iconOffsetX
+ * @text アイコンXオフセット
+ * @desc アイコンのX座標を微調整します
+ * @type number
+ * @default 0
+ * 
+ * @param iconOffsetY
+ * @text アイコンYオフセット
+ * @desc アイコンのY座標を微調整します
+ * @type number
+ * @default 0
+ * 
+ * @help
+ * 【使い方】
+ * プラグインパラメータで各メニュー項目に対応するアイコンIDを設定してください。
+ */
+
+(() => {
+    const parameters = PluginManager.parameters("menu_icon_display");
+    const itemIcon = Number(parameters["itemIcon"] || 176);
+    const skillIcon = Number(parameters["skillIcon"] || 64);
+    const equipIcon = Number(parameters["equipIcon"] || 96);
+    const statusIcon = Number(parameters["statusIcon"] || 120);
+    const sortIcon = Number(parameters["sortIcon"] || 160);
+    const optionsIcon = Number(parameters["optionsIcon"] || 144);
+    const saveIcon = Number(parameters["saveIcon"] || 224);
+    const gameEndIcon = Number(parameters["gameEndIcon"] || 128);
+    const iconOffsetX = Number(parameters["iconOffsetX"] || 0);
+    const iconOffsetY = Number(parameters["iconOffsetY"] || 0);
+
+    const menuIcons = {
+        "アイテム": itemIcon,
+        "スキル": skillIcon,
+        "装備": equipIcon,
+        "ステータス": statusIcon,
+        "並び替え": sortIcon,
+        "オプション": optionsIcon,
+        "セーブ": saveIcon,
+        "ゲーム終了": gameEndIcon
+    };
+
+    const _Window_MenuCommand_drawItem = Window_MenuCommand.prototype.drawItem;
+    Window_MenuCommand.prototype.drawItem = function(index) {
+        const rect = this.itemLineRect(index);
+        const commandName = this.commandName(index);
+        const iconIndex = menuIcons[commandName] || 0;
+        if (iconIndex > 0) {
+            this.drawIcon(iconIndex, rect.x + iconOffsetX, rect.y + iconOffsetY);
+            rect.x += ImageManager.iconWidth + 4;
+        }
+        _Window_MenuCommand_drawItem.call(this, index);
+    };
+})();
